@@ -1,23 +1,57 @@
-package playlist // <-- OJO: El paquete ahora es "playlist"
+// Fichero: playlist/playlist.go
+
+package playlist
 
 import (
+	"bufio"
 	"fmt"
-	"path/filepath"
+	"os"
+	"path/filepath" // <-- Importamos el paquete para manejar rutas de ficheros
+	"strings"
 )
 
-// Playlist gestiona la lista de canciones.
+// Playlist ahora se refiere a un fichero de playlist, no a un directorio.
 type Playlist struct {
-	MusicDir string
+	FilePath string
 }
 
-// GetSongs busca y devuelve la lista de ficheros .mp3 en el directorio.
+// GetSongs ahora lee el fichero M3U y construye las rutas completas.
 func (p *Playlist) GetSongs() ([]string, error) {
-	files, err := filepath.Glob(filepath.Join(p.MusicDir, "*.mp3"))
+	file, err := os.Open(p.FilePath)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("no se pudo abrir el fichero de playlist '%s': %w", p.FilePath, err)
 	}
-	if len(files) == 0 {
-		return nil, fmt.Errorf("no se encontraron ficheros .mp3 en '%s'", p.MusicDir)
+	defer file.Close()
+
+	var songs []string
+	
+	// --- ¡LA LÓGICA INTELIGENTE! ---
+	// 1. Obtenemos la ruta del directorio que contiene el fichero de playlist.
+	playlistDir := filepath.Dir(p.FilePath)
+
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		line := scanner.Text()
+		
+		// Ignoramos líneas vacías o comentarios (que suelen empezar con #)
+		if line != "" && !strings.HasPrefix(line, "#") {
+			// 2. Unimos la ruta del directorio con el nombre del fichero de la línea.
+			// filepath.Join se encarga de poner las barras / o \ correctamente.
+			fullPath := filepath.Join(playlistDir, line)
+			
+			// 3. Añadimos la ruta completa y correcta a nuestra lista de canciones.
+			songs = append(songs, fullPath)
+		}
 	}
-	return files, nil
+	// --- FIN DE LA LÓGICA INTELIGENTE ---
+
+	if err := scanner.Err(); err != nil {
+		return nil, fmt.Errorf("error leyendo el fichero de playlist: %w", err)
+	}
+
+	if len(songs) == 0 {
+		return nil, fmt.Errorf("no se encontraron canciones válidas en la playlist '%s'", p.FilePath)
+	}
+
+	return songs, nil
 }

@@ -1,0 +1,9 @@
+#EXTM3U
+#EXTINF:240,Canción 1
+cancion1.mp3
+#EXTINF:215,Canción 2
+cancion2.mp3
+#EXTINF:198,Canción 3
+cancion3.mp3
+#EXTINF:260,Canción 4
+cancion4.mp3
