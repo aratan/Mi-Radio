@@ -1,0 +1,9 @@
+{
+  "provider_hostname": "37.157.242.101",
+  "provider_port": 38755,
+  "source_password": "",
+  "mount_point": "/",
+  "username": "source",
+  "music_directory": "./music",
+  "stream_id": "1"
+}
